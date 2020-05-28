@@ -1,0 +1,15 @@
+
+#当前主机file目录下已有mysql包
+- name: 拷贝本地mysql包到所有主机
+  copy: src=mysql-{{MYSQL_VER}}-1.el7.x86_64.rpm-bundle.tar dest={{ SOURCE_DIR }}/{{ MYSQL_VER }} owner={{ MYSQL_USER }} group={{ MYSQL_USER }}
+
+- name: 解压mysql包
+  unarchive: src={{ SOURCE_DIR }}/{{ MYSQL_VER }}/mysql-{{ MYSQL_VER }}-1.el7.x86_64.rpm-bundle.tar dest={{SOURCE_DIR}}/{{ MYSQL_VER }} owner={{ MYSQL_USER }} group={{ MYSQL_USER }}
+
+#复制mysql服务文件
+- name: 拷贝mysql服务文件
+  template: src=mysqld.service dest=/usr/lib/systemd/system/mysqld.service owner=root group=root
+
+#复制更改密码脚本
+- name: 拷贝更改密码脚本
+  template: src=change_passwd.sh dest={{ SOURCE_DIR }} owner=root group=root

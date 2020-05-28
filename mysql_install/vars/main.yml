@@ -1,0 +1,24 @@
+---
+# vars file for mysql
+
+#mysql安装版本
+MYSQL_VER: 5.7.29
+
+#定义mysql启动用户和监听端口
+MYSQL_USER: mysql
+MYSQL_PORT: 3306
+
+#定义mysql初始root密码
+MYSQL_PASSWD: 123456789
+
+#定义mysql安装包目的路径
+SOURCE_DIR: /data/mysql_software
+
+#定义mysql安装目录和数据目录
+BASE_DIR: /data/
+DATA_DIR: /data/mysql
+
+#根据IP后四位定义mysql_id信息
+MYSQL_ID: "{{ansible_ssh_host.split('.')[-1]}}"
+
+

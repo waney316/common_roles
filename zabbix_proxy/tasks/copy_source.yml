@@ -1,0 +1,39 @@
+# 拷贝相关文件到目标主机
+- name: 拷贝zabbix源码包到目标主机
+  copy: 
+    src: "{{ item }}"  
+    dest: "{{ PACKAGE_DIR }}"
+    owner: root 
+    group: root
+    mode: 0755
+    force: yes
+  with_items:
+    - "database/schema.sql"
+    - "zabbix_proxy-{{ ZABBIX_VER }}.tar.gz"
+
+# 拷贝libevent二进制包到目标主机
+- name: 拷贝libevent/fping二进制包到目标主机
+  copy:
+    src: "{{ item }}"  
+    dest: "{{ PACKAGE_DIR }}"
+    owner: root 
+    group: root
+    mode: 0755
+    force: yes
+  with_items:
+    - "libevent-2.0.21-4.el7.x86_64.rpm"
+    - "libevent-devel-2.0.21-4.el7.x86_64.rpm"
+    - "fping-3.10-4.el7.x86_64.rpm"
+
+# 拷贝zabbix_proxy启动文件
+- name: 拷贝init.d启动文件到目标主机
+  template:
+    src: "{{ item }}"
+    dest: "/etc/init.d/"
+    owner: root
+    group: root
+    mode: 0775
+    force: yes
+  with_items:
+    - "init.d/zabbix_proxy"
+    - "init.d/zabbix_agentd"

@@ -1,0 +1,48 @@
+
+############## 安装时基础信息 #############################
+# 定义zabbix安装版本，启动用户，安装路径，包路径
+ZABBIX_VER: 4.2.1
+RUN_USER: zabbix
+PACKAGE_DIR: /opt/aspire/product/package
+BASE_DIR: /opt/aspire/product/zabbixpxy
+
+######## zabbix agentd/zabbix proxy 通用配置 ###############
+#
+LOG_FILE: /tmp
+PID_FILE: /tmp
+
+# # 数据库信息，定义zabbix_proxy数据库相关信息
+# DB_ROOT: root
+# DB_ROOTPASS: Asp@aspire+888
+# DB_PORT: 3306
+# DB_HOST: 10.12.70.42
+
+# ############## zabbix proxy 相关信息配置 #####################
+# # zabbix数据库信息
+# DB_NAME: zabbix_proxy
+# DB_USER: zabbix_test
+# DB_PASSWORD: Asp@aspire+999
+
+# SERVER: 127.0.0.1
+# SERVER_PORT: 10051
+# HOSTNAME: zabbix_proxy
+# LISTEN_PORT: 10051
+
+# # ADVANCED PARAMETERS DEFAULT
+# # StartPollers=20
+# # StartPreprocessors=20
+# # StartPollersUnreachable=20
+# # StartTrappers=20
+# # StartPingers=20
+# # CacheSize=1G
+# # HistoryCacheSize=2G
+# # HistoryIndexCacheSize=1G
+# # Timeout=30
+# # FpingLocation=/usr/sbin/fping
+# # LogSlowQueries=3000
+# # StatsAllowedIP=127.0.0.1
+
+# ############## zabbix agent 相关信息配置 #####################
+# # AGENT_HOSTNAME: {{ ansible_ssh_host }}
+# AGENT_SERVER: 127.0.0.1
+# AGENT_LISTEN_PORT: 10052

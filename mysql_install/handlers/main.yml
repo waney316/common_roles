@@ -1,0 +1,6 @@
+---
+# handlers file for mysql
+
+# 当profile文件改动, source使其生效
+- name: source profile
+  shell: source /etc/profile

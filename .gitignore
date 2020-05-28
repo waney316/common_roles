@@ -1,0 +1,3 @@
+# ignore some zip file
+*.zip
+ops-proxy

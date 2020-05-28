@@ -1,0 +1,6 @@
+---
+# tasks file for mysql
+- include: pre_check.yml
+- include: copy.yml
+- include: register_vars.yml
+- include: install.yml

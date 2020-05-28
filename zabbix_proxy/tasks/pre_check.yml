@@ -1,0 +1,43 @@
+- ping:
+
+- name: 安装所需依赖包
+  yum:
+    name:
+      - gcc
+      - gcc-c++
+      - unzip
+      # VMware支持
+      - libxml2
+      - libxml2-devel
+      # unixODBC支持
+      - unixODBC
+      - unixODBC-devel
+      # SNMP支持
+      - net-snmp-devel
+      # - OpenIPMI
+      # - OpenIPMI-devel
+      - ncurses-devel
+      # mysql_xx模块需要
+      - MySQL-python
+    state:
+      latest
+
+- name: 创建zabbix用户组
+  group: name={{ RUN_USER }}  state=present
+
+- name: 创建zabbix用户
+  user: name={{ RUN_USER }}  group={{ RUN_USER }}  state=present create_home=False shell=/sbin/nologin
+
+- name: 创建所需目录
+  file: name={{ item }} state=directory mode=0755 recurse=yes
+  with_items:
+  - "{{ PACKAGE_DIR }}"
+  - "{{ BASE_DIR }}"
+
+- name: 更改目录属主属组
+  file: name={{ BASE_DIR }} owner={{ RUN_USER }} group={{ RUN_USER }}
+
+
+
+
+

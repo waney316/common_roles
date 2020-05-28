@@ -1,0 +1,71 @@
+- ping:
+
+- name: 关闭firewalld
+  service: name=firewalld state=stopped enabled=no
+
+- name: 临时关闭 selinux
+  shell: "setenforce 0"
+  failed_when: false
+
+- name: 永久关闭 selinux
+  lineinfile:
+    dest: /etc/selinux/config
+    regexp: "^SELINUX="
+    line: "SELINUX=disabled"
+
+- name: 安装常用软件包
+  yum:
+    name:
+      - net-tools
+      - gcc
+      - gcc-c++
+      - unzip
+    state: latest
+
+- name: 修改limits.conf参数信息
+  blockinfile:
+    dest: /etc/security/limits.conf
+    backup: yes
+    marker: "#{mark} limits info"
+    block: |
+      *  soft  nofile  65535
+      *  hard  nofile  65535
+      *  soft  nproc  4096
+      *  hard  nproc  16384
+      *  soft  stack  1024
+      *  hard  stack  10240
+
+- name: 针对mysql做资源连接限制
+  blockinfile:
+    dest: /etc/profile
+    backup: yes
+    marker: "#{mark mysql limit info}"
+    # insertbefore: ""
+    block: |
+      if [ $USER = "mysql" ]; then
+        if [ $SHELL = "/bin/ksh" ]; then
+              ulimit -p 16384
+              ulimit -n 65535
+        else
+              ulimit -u 16384 -n 65535
+        fi
+      fi
+  notify:
+    - source profile
+
+- name: 创建mysql用户组
+  group: name={{ MYSQL_USER }}  state=present
+
+- name: 创建mysql用户
+  user: name={{ MYSQL_USER }}  group={{ MYSQL_USER }}  state=present create_home=False shell=/sbin/nologin
+
+- name: 创建所需目录
+  file: name={{ item }} state=directory mode=0755 recurse=yes
+  with_items:
+  - "{{ DATA_DIR }}"
+  - "{{ SOURCE_DIR }}/{{ MYSQL_VER }}"
+
+- name: 更改目录属主属组
+  file: name={{ DATA_DIR }} owner={{ MYSQL_USER }} group={{ MYSQL_USER }}
+
+

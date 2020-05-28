@@ -1,0 +1,9 @@
+
+#系统信息
+- name: 注册MEM_BUFFER_SIZE变量
+  shell: cat /proc/meminfo |grep MemTotal |awk '{printf "%d",$2/1024*0.7}'
+  register: MEM_BUFFER_SIZE
+
+- name: 注册CPU_CORE_NUMBER变量
+  shell: cat /proc/cpuinfo |grep processor |wc -l
+  register: CPU_CORE_NUMBER

@@ -1,0 +1,18 @@
+---
+
+# 该节点下ip安装mysql
+- hosts: mysql
+  remote_user: root
+  gather_facts: false
+  roles:
+    # the role  for mysql install and init first time
+    - role: mysql_install
+
+
+
+# 该节点下安装zabbix_proxy
+- hosts: zabbix_proxy
+  remote_user: root
+  gather_facts: false
+  roles:
+    - role: zabbix_proxy

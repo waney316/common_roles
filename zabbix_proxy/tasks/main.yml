@@ -1,0 +1,6 @@
+---
+# tasks file for zabbix_proxy
+
+- include: pre_check.yml
+- include: copy_source.yml
+- include: install_proxy.yml
