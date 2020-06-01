@@ -1,0 +1,8 @@
+#!/bin/bash
+#该脚本用于更改数据库root密码
+
+passwd={{ MYSQL_PASSWD }}
+
+/usr/bin/mysql -uroot -D mysql -e "UPDATE user SET authentication_string=PASSWORD('$passwd') WHERE user='root';"
+/usr/bin/mysql -uroot -e "FLUSH PRIVILEGES;"
+/usr/bin/mysql -uroot -p$passwd -e "grant all privileges on *.* to root@'%'  identified by '$passwd';"

@@ -1,0 +1,90 @@
+#卸载mysql初始依赖
+- name: 卸载自带mysql
+  shell: rpm -qa |egrep "mysql|MYSQL|mariadb" |xargs rpm -e --nodeps ||true
+  args:
+    warn: False
+  register: rpm_result
+  changed_when: "rpm_result.rc == 0"
+
+# rpm二进制安装
+- name: 二进制安装mysql
+  shell: rpm -ivh {{ item }}
+  args:
+    chdir: "{{ SOURCE_DIR }}/{{ MYSQL_VER }}"
+    warn: False
+  with_items:
+    - mysql-community-common-{{ MYSQL_VER }}-1.el7.x86_64.rpm
+    - mysql-community-libs-{{ MYSQL_VER }}-1.el7.x86_64.rpm
+    - mysql-community-libs-compat-{{ MYSQL_VER }}-1.el7.x86_64.rpm
+    - mysql-community-devel-{{ MYSQL_VER }}-1.el7.x86_64.rpm
+    - mysql-community-client-{{ MYSQL_VER }}-1.el7.x86_64.rpm
+    - mysql-community-server-{{ MYSQL_VER }}-1.el7.x86_64.rpm
+
+
+- name: 拷贝my.cnf文件
+  template: 
+    src: my.cnf.j2   
+    dest: /etc/my.cnf 
+    backup: yes 
+    owner: root 
+    group: root 
+    force: yes 
+
+- name: /etc/my.cnf文件配置CPU核数
+  replace:
+    path: /etc/my.cnf
+    regexp: "\\${CPU_CORE_NUMBER}"
+    replace: "{{CPU_CORE_NUMBER.stdout}}"
+- name: /etc/my.cnf文件配置buff内存
+  replace:
+    path: /etc/my.cnf
+    regexp: "\\${MEM_BUFFER_SIZE}"
+    replace: "{{MEM_BUFFER_SIZE.stdout}}"
+
+#初始化安装mysql
+- name: mysql初始化
+  shell: "/usr/sbin/mysqld --defaults-file=/etc/my.cnf --initialize-insecure --basedir={{ BASE_DIR }}  --datadir={{ DATA_DIR }} "
+
+- name: ssl密钥文件生成
+  shell: |
+    mysql_ssl_rsa_setup --datadir={{ DATA_DIR }}
+    chmod 644 private_key.pem
+    chmod 644 server-key.pem
+  args:
+    chdir: "{{ DATA_DIR }}"
+
+#再次授权mysql目录
+- name: 再次设置目录属主权限
+  file: name={{ DATA_DIR }} owner={{ MYSQL_USER }} group={{ MYSQL_USER }} recurse=yes
+
+- name: 启动mysql并开机启动
+  shell: "systemctl daemon-reload && systemctl enable mysqld && systemctl start mysqld"
+
+- name: 休眠3s等待mysql启动
+  pause: 
+    seconds: 3
+  
+- name: 检查mysql启动状态
+  shell: ps -ef |grep /usr/sbin/mysqld |grep -v grep |wc -l
+  register: mysql_status
+- debug: 
+    var: mysql_status.stdout
+- fail:
+    msg: "mysqld service not start"
+  when:
+    mysql_status.stdout == 0 
+
+- name: 设置mysql.sock软连接 
+  shell: ln -s {{ DATA_DIR }}/mysql.sock  mysql.sock 
+  args:
+    warn: False
+    chdir: /var/lib/mysql
+
+- name: 设置数据库root密码
+  shell: "bash {{ SOURCE_DIR }}/change_passwd.sh"
+
+- name: 最后查看mysql连接状态
+  shell: '/usr/bin/mysql -uroot -p{{MYSQL_PASSWD}} -e "select version()"'
+  register: mysql_version
+- debug:
+    var:  mysql_version.stdout

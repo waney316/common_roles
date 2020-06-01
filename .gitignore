@@ -1,3 +1,4 @@
 # ignore some zip file
 *.zip
 ops-proxy
+group_vars/ops-proxy*

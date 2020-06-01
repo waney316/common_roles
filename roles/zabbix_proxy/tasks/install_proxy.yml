@@ -1,0 +1,116 @@
+############################### mysql相关建库建表操作 ##############################
+# 如下涉及mysql操作需要mysql命令位于 /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+
+- name: 检查是否存在mysql命令
+  command: mysql
+  ignore_errors: True
+  register: check_mysql
+- debug: msg="mysql command not exist"
+- name: 判断目标主机是否存在mysql命令，如果没有拷贝
+  copy: 
+    src: mysql
+    dest: /usr/local/bin
+    force: False
+    mode: 0755
+  when: 
+    - "check_mysql.rc == 2"
+
+- name: 数据库zabix_proxy初始化
+  mysql_db:
+    login_host: "{{ DB_HOST }}"
+    login_user: "{{ DB_ROOT }}"
+    login_password: "{{ DB_ROOTPASS }}"
+    login_port: "{{ DB_PORT }}"
+    name: "{{ DB_NAME }}"
+    collation: utf8_bin
+    state: present
+
+- name: 导入zabbix_proxy sql文件，这步会执行较长时间
+  mysql_db:
+    login_host: "{{ DB_HOST }}"
+    login_user: "{{ DB_ROOT }}"
+    login_password: "{{ DB_ROOTPASS }}"
+    login_port: "{{ DB_PORT }}"
+    state: import
+    name: "{{ DB_NAME }}"
+    target: "{{ PACKAGE_DIR }}/schema.sql"
+
+- name: 创建zabbix用户及授权
+  mysql_user:
+    login_host: "{{ DB_HOST }}"
+    login_user: "{{ DB_ROOT }}"
+    login_password: "{{ DB_ROOTPASS }}"
+    login_port: "{{ DB_PORT }}"
+    name: "{{ DB_USER }}"
+    password: "{{ DB_PASSWORD }}"
+    priv: "{{ DB_NAME }}.*:ALL"
+    host: "%"
+    state: present
+
+
+###############################zabbix安装初始化工作#################################
+#
+- name: 二进制安装libevent-devel和fping
+  yum:
+    name:
+      - "{{ PACKAGE_DIR}}/libevent-2.0.21-4.el7.x86_64.rpm"
+      - "{{ PACKAGE_DIR}}/libevent-devel-2.0.21-4.el7.x86_64.rpm"
+      - "{{ PACKAGE_DIR}}/fping-3.10-4.el7.x86_64.rpm"
+    state: present
+  register: rpm_result
+ 
+
+- name: 解压zabbix_proxy源码编译包
+  unarchive: src={{ PACKAGE_DIR}}/zabbix_proxy-{{ ZABBIX_VER }}.tar.gz dest={{ BASE_DIR }} owner={{ RUN_USER }} group={{ RUN_USER }}
+
+- name: ldd检查zabbix_proxy依赖是否完整
+  shell: ldd {{ BASE_DIR }}/sbin/zabbix_proxy |grep 'not found' |grep -v grep
+  failed_when: false
+  register: proxy_requirements
+  tags: ldd_check
+- fail:
+    msg: 'lack some zabbix proxy requirements'
+  when:
+    - proxy_requirements.rc == 0
+  
+- name: zabbix_proxy/zabbix_agentd配置文件初始化
+  template:
+    src: "{{ item }}"
+    dest: "{{BASE_DIR}}/etc/"
+    force: yes
+    owner: "{{ RUN_USER }}"
+    group: "{{ RUN_USER }}"
+    mode: 0755
+  with_items:
+    - "conf/zabbix_proxy.conf"
+    - "conf/zabbix_agentd.conf"
+
+- name: zabbix二进制文件添加执行权限
+  file:
+    name: "{{ item }}"
+    owner: "{{ RUN_USER }}"
+    group: "{{ RUN_USER }}"
+    mode: 0755
+    recurse: yes
+  with_items:
+    - "{{ BASE_DIR }}/sbin/"
+    - "{{ BASE_DIR }}/bin/"
+
+- name: zabbix安装目录再次授权
+  file: name={{ BASE_DIR }} owner={{ RUN_USER }} group={{ RUN_USER }}
+
+- name: 启动zabbix_proxy和zabbix_agentd
+  shell: "{{ BASE_DIR }}/sbin/{{ item }} -c {{ BASE_DIR}}/etc/{{ item }}.conf"
+  tags: "start zbbix_proxy"
+  with_items:
+    - "zabbix_proxy"
+    - "zabbix_agentd"
+
+- name: 检测启动状态
+  shell: "ps -ef |egrep 'zabbix_proxy.conf|zabbix_agentd.conf' |grep -v grep  |wc -l"
+  register: proxy_status
+- fail:
+    msg: "zabbix_proxy not start, please check configuration"
+  when:
+    - "proxy_status.rc != 2"
+- debug: 'msg="zabbix_proxy:已启动  *****  zabbix_agentd:已启动"'
