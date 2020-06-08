@@ -5,7 +5,7 @@
   command: mysql
   ignore_errors: True
   register: check_mysql
-- debug: msg="mysql command not exist"
+  tags: check mysql
 - name: 判断目标主机是否存在mysql命令，如果没有拷贝
   copy: 
     src: mysql
@@ -13,7 +13,7 @@
     force: False
     mode: 0755
   when: 
-    - "check_mysql.rc == 2"
+    - "'not found' in check_mysql.stderr_lines"
 
 - name: 数据库zabix_proxy初始化
   mysql_db:
@@ -105,6 +105,13 @@
   with_items:
     - "zabbix_proxy"
     - "zabbix_agentd"
+
+# 当指定配置文件文件无法启动
+- name: init二进制文件启动
+  shell: |
+    /etc/init.d/zabbix_proxy restat
+    /etc/init.d/zabbix_agentd restart
+  tags: restart zabbix
 
 - name: 检测启动状态
   shell: "ps -ef |egrep 'zabbix_proxy.conf|zabbix_agentd.conf' |grep -v grep  |wc -l"
