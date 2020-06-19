@@ -4,7 +4,7 @@
   copy: src=mysql-{{MYSQL_VER}}-1.el7.x86_64.rpm-bundle.tar dest={{ SOURCE_DIR }}/{{ MYSQL_VER }} owner={{ MYSQL_USER }} group={{ MYSQL_USER }}
 
 - name: 解压mysql包
-  unarchive: src={{ SOURCE_DIR }}/{{ MYSQL_VER }}/mysql-{{ MYSQL_VER }}-1.el7.x86_64.rpm-bundle.tar dest={{SOURCE_DIR}}/{{ MYSQL_VER }} owner={{ MYSQL_USER }} group={{ MYSQL_USER }}
+  unarchive: copy=no src={{ SOURCE_DIR }}/{{ MYSQL_VER }}/mysql-{{ MYSQL_VER }}-1.el7.x86_64.rpm-bundle.tar dest={{SOURCE_DIR}}/{{ MYSQL_VER }} owner={{ MYSQL_USER }} group={{ MYSQL_USER }}
 
 #复制mysql服务文件
 - name: 拷贝mysql服务文件
