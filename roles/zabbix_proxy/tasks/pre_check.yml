@@ -13,7 +13,7 @@
       - unixODBC
       - unixODBC-devel
       # SNMP支持
-      # 一般系统可能未自带该包，导致yum 任务终止, 可注释，已编译zabbix_proxy包自带有snmp, 可后续安装
+      # 一般系统可能未自带该包导致yum任务终止, 可注释，已编译zabbix_proxy包自带有snmp, 可后续安装
       - net-snmp-devel
       # - OpenIPMI
       # - OpenIPMI-devel

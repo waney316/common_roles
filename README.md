@@ -4,7 +4,7 @@
 - mysql升级
 - zabbix_proxy部署（已编译包）
 
-
+##### 注意：所有安装需要保证主机有对应版本的完成镜像，且yum已配置
 
 #### zabbix_proxy安装
 
