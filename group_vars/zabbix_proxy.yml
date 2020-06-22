@@ -1,6 +1,7 @@
 
 ############## 安装时基础信息 #############################
 # 定义zabbix安装版本，启动用户，安装路径，包路径
+# 该版本号需要通tasks中files目录下版本号把持一致
 ZABBIX_VER: 4.2.1
 RUN_USER: zabbix
 PACKAGE_DIR: /opt/aspire/product/package

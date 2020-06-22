@@ -2,7 +2,7 @@
 # 如下涉及mysql操作需要mysql命令位于 /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 
 - name: 检查是否存在mysql命令
-  command: mysql
+  shell: type mysql
   ignore_errors: True
   register: check_mysql
   tags: check mysql
@@ -35,6 +35,9 @@
     name: "{{ DB_NAME }}"
     target: "{{ PACKAGE_DIR }}/schema.sql"
 
+# 该授权需要root用户开启远程grant权限
+# select user, host, Grant_priv, Super_priv from mysql.user
+# update mysql.user set Grant_priv=Y where user=root and host='%'
 - name: 创建zabbix用户及授权
   mysql_user:
     login_host: "{{ DB_HOST }}"
@@ -61,7 +64,7 @@
  
 
 - name: 解压zabbix_proxy源码编译包
-  unarchive: src={{ PACKAGE_DIR}}/zabbix_proxy-{{ ZABBIX_VER }}.tar.gz dest={{ BASE_DIR }} owner={{ RUN_USER }} group={{ RUN_USER }}
+  unarchive: copy=no src={{ PACKAGE_DIR}}/zabbix_proxy-{{ ZABBIX_VER }}.tar.gz dest={{ BASE_DIR }} owner={{ RUN_USER }} group={{ RUN_USER }}
 
 - name: ldd检查zabbix_proxy依赖是否完整
   shell: ldd {{ BASE_DIR }}/sbin/zabbix_proxy |grep 'not found' |grep -v grep
@@ -114,7 +117,7 @@
   tags: restart zabbix
 
 - name: 检测启动状态
-  shell: "ps -ef |egrep 'zabbix_proxy.conf|zabbix_agentd.conf' |grep -v grep  |wc -l"
+  shell: "ps -ef |egrep 'zabbix_proxy|zabbix_agentd' |grep -v grep  |wc -l"
   register: proxy_status
 - fail:
     msg: "zabbix_proxy not start, please check configuration"

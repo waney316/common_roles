@@ -20,7 +20,7 @@
       - gcc
       - gcc-c++
       - unzip
-    state: latest
+    state: present
 
 - name: 修改limits.conf参数信息
   blockinfile:
