@@ -8,12 +8,12 @@
   tags: check mysql
 - name: 判断目标主机是否存在mysql命令，如果没有拷贝
   copy: 
-    src: mysql
+    src: pakages/mysql
     dest: /usr/local/bin
     force: False
     mode: 0755
   when: 
-    - "'not found' in check_mysql.stderr_lines"
+    - "'not found' in check_mysql.stderr"
 
 - name: 数据库zabix_proxy初始化
   mysql_db:

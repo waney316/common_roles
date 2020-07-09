@@ -1,7 +1,10 @@
 - ping:
 
 - name: 关闭firewalld
-  service: name=firewalld state=stopped enabled=no
+  service: 
+    name: firewalld 
+    state: stopped 
+    enabled: no
 
 - name: 临时关闭 selinux
   shell: "setenforce 0"
@@ -54,18 +57,32 @@
     - source profile
 
 - name: 创建mysql用户组
-  group: name={{ MYSQL_USER }}  state=present
+  group: 
+    name: "{{ MYSQL_USER }}"
+    state: present
 
 - name: 创建mysql用户
-  user: name={{ MYSQL_USER }}  group={{ MYSQL_USER }}  state=present create_home=False shell=/sbin/nologin
+  user: 
+    name: "{{ MYSQL_USER }}"
+    group: "{{ MYSQL_USER }}"
+    state: present 
+    create_home: False 
+    shell: /sbin/nologin
 
 - name: 创建所需目录
-  file: name={{ item }} state=directory mode=0755 recurse=yes
+  file: 
+    name: "{{ item }}" 
+    state: directory 
+    mode: 0755 
+    recurse: yes
   with_items:
   - "{{ DATA_DIR }}"
   - "{{ SOURCE_DIR }}/{{ MYSQL_VER }}"
 
 - name: 更改目录属主属组
-  file: name={{ DATA_DIR }} owner={{ MYSQL_USER }} group={{ MYSQL_USER }}
+  file: 
+    name: "{{ DATA_DIR }}"
+    owner: "{{ MYSQL_USER }}"
+    group: "{{ MYSQL_USER }}"
 
 
